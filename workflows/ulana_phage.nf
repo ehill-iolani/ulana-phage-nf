@@ -32,6 +32,15 @@ def sizeBp(name, value) {
     return bp
 }
 
+// Under -stub-run (CI) the database steps are skipped and PHAROKKA/CHECKV get
+// tests/data/stub/{pharokka,checkv} as their `db`, which their stub blocks
+// copy real T7 outputs from. Every other step has no stub block, so it still
+// runs for real. Skipping the database steps (rather than stubbing them) also
+// means a stub run can never leave an empty "database" in the real db_cache
+def stubDb(name) {
+    return channel.value(file("${projectDir}/tests/data/stub/${name}", checkIfExists: true))
+}
+
 workflow ULANA_PHAGE {
 
     take:
@@ -99,18 +108,13 @@ workflow ULANA_PHAGE {
         assembly_ch = FLYE_ASSEMBLY.out.assembly
     }
 
-    // 5-6 need 8.2 GB of databases. Under -stub-run (CI) the database steps
-    // are skipped and PHAROKKA/CHECKV get tests/data/stub/{pharokka,checkv}
-    // as their `db`, which their stub blocks copy real T7 outputs from. Every
-    // other step has no stub block, so it still runs for real. Skipping the
-    // database steps (rather than stubbing them) also means a stub run can
-    // never leave an empty "database" in the real db_cache
-    def stub_dir = { name -> Channel.value(file("${projectDir}/tests/data/stub/${name}", checkIfExists: true)) }
+    // 5-6 need 8.2 GB of databases; under -stub-run (CI) they're swapped for
+    // the stub outputs, see stubDb() above
 
     // 5. annotate -- optional
     if (params.enable_pharokka) {
         if (workflow.stubRun) {
-            pharokka_db = stub_dir('pharokka')
+            pharokka_db = stubDb('pharokka')
         } else {
             PHAROKKA_DB()
             pharokka_db = PHAROKKA_DB.out.db
@@ -121,7 +125,7 @@ workflow ULANA_PHAGE {
     // 6. completeness / contamination -- optional, independent of Pharokka
     if (params.enable_checkv) {
         if (workflow.stubRun) {
-            checkv_db = stub_dir('checkv')
+            checkv_db = stubDb('checkv')
         } else {
             CHECKV_DB()
             checkv_db = CHECKV_DB.out.db

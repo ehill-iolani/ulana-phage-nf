@@ -46,7 +46,9 @@ process DOWNSAMPLE_PLAN {
         GENOME_SIZE=${genome_size}
         SOURCE=given
     else
-        # seeded so a rerun makes the same estimate
+        # seeded so a rerun makes the same estimate -- on the same CPU count:
+        # the deep barcode22 set gave 111,118 bp with 4 threads and 108,984
+        # with 2 (Batch, 2026-11-06), so a machine-size change moves it ~2%
         LRGE_ESTIMATE=\$(lrge -t ${task.cpus} -s 1 ${reads} 2> lrge.log || true)
         case "\$LRGE_ESTIMATE" in
             ''|*[!0-9]*|0) LRGE_ESTIMATE=''; GENOME_SIZE=\$MAX_SIZE; SOURCE=no_estimate ;;

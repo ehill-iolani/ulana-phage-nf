@@ -1,0 +1,92 @@
+2026-11-06 20:18:06.010 | INFO     | pharokka.run:main:123 - Starting Pharokka v1.10.1
+2026-11-06 20:18:06.010 | INFO     | pharokka.run:main:124 - Command executed: Namespace(infile='polished_consensus.fasta', outdir='pharokka_out', database='pharokka_v1.8.0_databases', threads=4, force=True, prefix='pharokka', locustag='T7', gene_predictor='phanotate', meta=False, split=False, coding_table='11', evalue='1E-05', fast=False, mmseqs2_only=False, meta_hmm=False, dnaapler=False, custom_hmm='', genbank=False, terminase=False, terminase_strand='nothing', terminase_start='nothing', skip_extra_annotations=False, skip_mash=False, minced_args='', mash_distance=0.2, trna_scan_model='general', keep_raw_prodigal=False, reverse_mmseqs2=False, sensitivity=8.5, citation=False)
+2026-11-06 20:18:06.011 | INFO     | pharokka.run:main:125 - Repository homepage is https://github.com/gbouras13/pharokka
+2026-11-06 20:18:06.011 | INFO     | pharokka.run:main:126 - Written by George Bouras: george.bouras@adelaide.edu.au
+2026-11-06 20:18:06.011 | INFO     | pharokka.run:main:128 - Checking database installation in pharokka_v1.8.0_databases.
+2026-11-06 20:18:06.016 | INFO     | pharokka.run:main:131 - All databases have been successfully checked.
+2026-11-06 20:18:06.016 | INFO     | pharokka.run:main:147 - Checking dependencies.
+2026-11-06 20:18:06.176 | INFO     | pharokka.input_commands:check_dependencies:441 - Phanotate version found is v1.6.7
+2026-11-06 20:18:06.176 | INFO     | pharokka.input_commands:check_dependencies:450 - Phanotate version is ok.
+2026-11-06 20:18:06.205 | INFO     | pharokka.input_commands:check_dependencies:506 - MMseqs2 version found is v18.8cc5c
+2026-11-06 20:18:06.205 | INFO     | pharokka.input_commands:check_dependencies:509 - MMseqs2 version is ok.
+2026-11-06 20:18:06.344 | INFO     | pharokka.input_commands:check_dependencies:532 - tRNAscan-SE version found is v2.0.13
+2026-11-06 20:18:06.344 | INFO     | pharokka.input_commands:check_dependencies:543 - tRNAscan-SE version is ok.
+2026-11-06 20:18:06.902 | INFO     | pharokka.input_commands:check_dependencies:566 - MinCED version found is v0.4.2
+2026-11-06 20:18:06.902 | INFO     | pharokka.input_commands:check_dependencies:577 - MinCED version is ok.
+2026-11-06 20:18:06.913 | INFO     | pharokka.input_commands:check_dependencies:601 - ARAGORN version found is v1.2.41
+2026-11-06 20:18:06.913 | INFO     | pharokka.input_commands:check_dependencies:612 - ARAGORN version is ok.
+2026-11-06 20:18:06.939 | INFO     | pharokka.input_commands:check_dependencies:629 - mash version found is v2.3
+2026-11-06 20:18:06.939 | INFO     | pharokka.input_commands:check_dependencies:636 - mash version is ok.
+2026-11-06 20:18:07.805 | INFO     | pharokka.input_commands:check_dependencies:654 - Dnaapler version found is v1.4.0
+2026-11-06 20:18:07.805 | INFO     | pharokka.input_commands:check_dependencies:663 - Dnaapler version is ok.
+2026-11-06 20:18:07.805 | INFO     | pharokka.input_commands:check_dependencies:674 - Pyrodigal version is v3.7.1
+2026-11-06 20:18:07.805 | INFO     | pharokka.input_commands:check_dependencies:675 - Pyrodigal version is ok.
+2026-11-06 20:18:07.805 | INFO     | pharokka.input_commands:check_dependencies:686 - Pyrodigal_gv version is v0.3.2
+2026-11-06 20:18:07.805 | INFO     | pharokka.input_commands:check_dependencies:687 - Pyrodigal_gv version is ok.
+2026-11-06 20:18:07.806 | INFO     | pharokka.input_commands:check_dependencies:698 - Pyrodigal_rv version is v0.1.0
+2026-11-06 20:18:07.806 | INFO     | pharokka.input_commands:check_dependencies:699 - Pyrodigal_rv version is ok.
+2026-11-06 20:18:07.806 | INFO     | pharokka.input_commands:validate_fasta:266 - Checking input polished_consensus.fasta.
+2026-11-06 20:18:07.807 | INFO     | pharokka.input_commands:validate_fasta:292 - Input polished_consensus.fasta is in FASTA format.
+2026-11-06 20:18:07.807 | INFO     | pharokka.input_commands:validate_fasta:293 - All headers in polished_consensus.fasta are unique.
+2026-11-06 20:18:07.807 | INFO     | pharokka.input_commands:validate_gene_predictor:319 - Phanotate will be used for gene prediction.
+2026-11-06 20:18:07.808 | INFO     | pharokka.run:main:309 - Running Phanotate.
+2026-11-06 20:18:07.811 | INFO     | pharokka.external_tools:run:47 - Started running phanotate.py -f fasta -o pharokka_out/phanotate_out_tmp.fasta polished_consensus.fasta ...
+2026-11-06 20:18:19.688 | INFO     | pharokka.external_tools:run:49 - Done running phanotate.py -f fasta -o pharokka_out/phanotate_out_tmp.fasta polished_consensus.fasta
+2026-11-06 20:18:19.690 | INFO     | pharokka.external_tools:run:47 - Started running phanotate.py -f tabular -o pharokka_out/phanotate_out.txt polished_consensus.fasta ...
+2026-11-06 20:18:31.524 | INFO     | pharokka.external_tools:run:49 - Done running phanotate.py -f tabular -o pharokka_out/phanotate_out.txt polished_consensus.fasta
+2026-11-06 20:18:31.672 | INFO     | pharokka.run:main:344 - Starting tRNA-scanSE.
+2026-11-06 20:18:31.673 | INFO     | pharokka.external_tools:run:47 - Started running tRNAscan-SE --thread 4 -G -f pharokka_out/trnascan_out.sec -Q -j pharokka_out/trnascan_out.gff polished_consensus.fasta ...
+2026-11-06 20:18:32.084 | INFO     | pharokka.external_tools:run:49 - Done running tRNAscan-SE --thread 4 -G -f pharokka_out/trnascan_out.sec -Q -j pharokka_out/trnascan_out.gff polished_consensus.fasta
+2026-11-06 20:18:32.085 | INFO     | pharokka.processes:run_minced:832 - Running MinCED.
+2026-11-06 20:18:32.086 | INFO     | pharokka.external_tools:run:47 - Started running minced polished_consensus.fasta pharokka_out/pharokka_minced_spacers.txt pharokka_out/pharokka_minced.gff ...
+2026-11-06 20:18:32.720 | INFO     | pharokka.external_tools:run:49 - Done running minced polished_consensus.fasta pharokka_out/pharokka_minced_spacers.txt pharokka_out/pharokka_minced.gff
+2026-11-06 20:18:32.721 | INFO     | pharokka.processes:run_aragorn:864 - Running Aragorn.
+2026-11-06 20:18:32.722 | INFO     | pharokka.external_tools:run:47 - Started running aragorn -l -gcbact -w -m -o pharokka_out/pharokka_aragorn.txt polished_consensus.fasta ...
+2026-11-06 20:18:32.746 | INFO     | pharokka.external_tools:run:49 - Done running aragorn -l -gcbact -w -m -o pharokka_out/pharokka_aragorn.txt polished_consensus.fasta
+2026-11-06 20:18:32.746 | INFO     | pharokka.run:main:354 - Starting MMseqs2.
+2026-11-06 20:18:32.746 | INFO     | pharokka.processes:run_mmseqs:652 - Running MMseqs2 on PHROG Database.
+2026-11-06 20:18:32.748 | INFO     | pharokka.external_tools:run:47 - Started running mmseqs createdb pharokka_out/phanotate_aas_tmp.fasta pharokka_out/target_dir/target_seqs ...
+2026-11-06 20:18:32.894 | INFO     | pharokka.external_tools:run:49 - Done running mmseqs createdb pharokka_out/phanotate_aas_tmp.fasta pharokka_out/target_dir/target_seqs
+2026-11-06 20:18:32.896 | INFO     | pharokka.external_tools:run:47 - Started running mmseqs search -e 1E-05 pharokka_v1.8.0_databases/phrogs_profile_db pharokka_out/target_dir/target_seqs pharokka_out/mmseqs/results_mmseqs pharokka_out/tmp_dir/ -s 8.5 --threads 4 ...
+2026-11-06 20:20:05.671 | INFO     | pharokka.external_tools:run:49 - Done running mmseqs search -e 1E-05 pharokka_v1.8.0_databases/phrogs_profile_db pharokka_out/target_dir/target_seqs pharokka_out/mmseqs/results_mmseqs pharokka_out/tmp_dir/ -s 8.5 --threads 4
+2026-11-06 20:20:05.676 | INFO     | pharokka.external_tools:run:47 - Started running mmseqs createtsv pharokka_v1.8.0_databases/phrogs_profile_db pharokka_out/target_dir/target_seqs pharokka_out/mmseqs/results_mmseqs pharokka_out/mmseqs_results.tsv --full-header --threads 4 ...
+2026-11-06 20:20:05.776 | INFO     | pharokka.external_tools:run:49 - Done running mmseqs createtsv pharokka_v1.8.0_databases/phrogs_profile_db pharokka_out/target_dir/target_seqs pharokka_out/mmseqs/results_mmseqs pharokka_out/mmseqs_results.tsv --full-header --threads 4
+2026-11-06 20:20:05.782 | INFO     | pharokka.processes:run_mmseqs:652 - Running MMseqs2 on CARD Database.
+2026-11-06 20:20:05.783 | INFO     | pharokka.external_tools:run:47 - Started running mmseqs createdb pharokka_out/phanotate_aas_tmp.fasta pharokka_out/CARD_target_dir/target_seqs ...
+2026-11-06 20:20:05.947 | INFO     | pharokka.external_tools:run:49 - Done running mmseqs createdb pharokka_out/phanotate_aas_tmp.fasta pharokka_out/CARD_target_dir/target_seqs
+2026-11-06 20:20:05.951 | INFO     | pharokka.external_tools:run:47 - Started running mmseqs search --min-seq-id 0.8 -c 0.4 pharokka_v1.8.0_databases/CARD pharokka_out/CARD_target_dir/target_seqs pharokka_out/CARD/results_mmseqs pharokka_out/CARD_dir/ -s 8.5 --threads 4 ...
+2026-11-06 20:20:28.706 | INFO     | pharokka.external_tools:run:49 - Done running mmseqs search --min-seq-id 0.8 -c 0.4 pharokka_v1.8.0_databases/CARD pharokka_out/CARD_target_dir/target_seqs pharokka_out/CARD/results_mmseqs pharokka_out/CARD_dir/ -s 8.5 --threads 4
+2026-11-06 20:20:28.710 | INFO     | pharokka.external_tools:run:47 - Started running mmseqs createtsv pharokka_v1.8.0_databases/CARD pharokka_out/CARD_target_dir/target_seqs pharokka_out/CARD/results_mmseqs pharokka_out/CARD_results.tsv --full-header --threads 4 ...
+2026-11-06 20:20:28.801 | INFO     | pharokka.external_tools:run:49 - Done running mmseqs createtsv pharokka_v1.8.0_databases/CARD pharokka_out/CARD_target_dir/target_seqs pharokka_out/CARD/results_mmseqs pharokka_out/CARD_results.tsv --full-header --threads 4
+2026-11-06 20:20:28.806 | INFO     | pharokka.processes:run_mmseqs:652 - Running MMseqs2 on VFDB Database.
+2026-11-06 20:20:28.807 | INFO     | pharokka.external_tools:run:47 - Started running mmseqs createdb pharokka_out/phanotate_aas_tmp.fasta pharokka_out/VFDB_target_dir/target_seqs ...
+2026-11-06 20:20:28.970 | INFO     | pharokka.external_tools:run:49 - Done running mmseqs createdb pharokka_out/phanotate_aas_tmp.fasta pharokka_out/VFDB_target_dir/target_seqs
+2026-11-06 20:20:28.971 | INFO     | pharokka.external_tools:run:47 - Started running mmseqs search --min-seq-id 0.8 -c 0.4 pharokka_v1.8.0_databases/vfdb pharokka_out/VFDB_target_dir/target_seqs pharokka_out/VFDB/results_mmseqs pharokka_out/VFDB_dir/ -s 8.5 --threads 4 ...
+2026-11-06 20:21:10.176 | INFO     | pharokka.external_tools:run:49 - Done running mmseqs search --min-seq-id 0.8 -c 0.4 pharokka_v1.8.0_databases/vfdb pharokka_out/VFDB_target_dir/target_seqs pharokka_out/VFDB/results_mmseqs pharokka_out/VFDB_dir/ -s 8.5 --threads 4
+2026-11-06 20:21:10.187 | INFO     | pharokka.external_tools:run:47 - Started running mmseqs createtsv pharokka_v1.8.0_databases/vfdb pharokka_out/VFDB_target_dir/target_seqs pharokka_out/VFDB/results_mmseqs pharokka_out/vfdb_results.tsv --full-header --threads 4 ...
+2026-11-06 20:21:10.274 | INFO     | pharokka.external_tools:run:49 - Done running mmseqs createtsv pharokka_v1.8.0_databases/vfdb pharokka_out/VFDB_target_dir/target_seqs pharokka_out/VFDB/results_mmseqs pharokka_out/vfdb_results.tsv --full-header --threads 4
+2026-11-06 20:21:10.282 | INFO     | pharokka.run:main:391 - Running PyHMMER on PHROGs.
+2026-11-06 20:21:21.321 | INFO     | pharokka.run:main:407 - Post Processing Output.
+2026-11-06 20:21:21.343 | INFO     | pharokka.post_processing:create_mmseqs_tophits:2282 - Processing MMseqs2 outputs.
+2026-11-06 20:21:21.343 | INFO     | pharokka.post_processing:create_mmseqs_tophits:2283 - Processing PHROGs output.
+2026-11-06 20:21:21.447 | INFO     | pharokka.post_processing:process_vfdb_results:2595 - Processing VFDB output.
+2026-11-06 20:21:21.457 | INFO     | pharokka.post_processing:process_vfdb_results:2792 - 0 VFDB virulence factors identified.
+2026-11-06 20:21:21.457 | INFO     | pharokka.post_processing:process_card_results:2815 - Processing CARD output.
+2026-11-06 20:21:21.460 | INFO     | pharokka.post_processing:process_card_results:3003 - 0 CARD AMR genes identified.
+2026-11-06 20:21:21.620 | INFO     | pharokka.run:main:480 - Converting gff to genbank.
+2026-11-06 20:21:21.635 | INFO     | pharokka.post_processing:extract_terl:2086 - Terminase large subunit found.
+2026-11-06 20:21:21.635 | INFO     | pharokka.post_processing:extract_terl:2088 - More than one CDS annotated as terminase large subunit found. 
+Saving all.
+2026-11-06 20:21:21.636 | INFO     | pharokka.run:main:498 - Finding the closest match for each contig in INPHARED using mash.
+2026-11-06 20:21:21.637 | INFO     | pharokka.external_tools:run:47 - Started running mash sketch polished_consensus.fasta -o pharokka_out/input_mash_sketch.msh -i ...
+2026-11-06 20:21:21.773 | INFO     | pharokka.external_tools:run:49 - Done running mash sketch polished_consensus.fasta -o pharokka_out/input_mash_sketch.msh -i
+2026-11-06 20:21:21.776 | INFO     | pharokka.external_tools:run_to_stdout:54 - Started running mash dist pharokka_out/input_mash_sketch.msh pharokka_v1.8.0_databases/9Aug2025_genomes.fa.msh -d 0.2 -i ...
+2026-11-06 20:21:23.174 | INFO     | pharokka.external_tools:run_to_stdout:56 - Done running mash dist pharokka_out/input_mash_sketch.msh pharokka_v1.8.0_databases/9Aug2025_genomes.fa.msh -d 0.2 -i
+2026-11-06 20:21:23.300 | INFO     | pharokka.run:main:520 - Pharokka has finished.
+2026-11-06 20:21:23.301 | INFO     | pharokka.run:main:521 - Elapsed time: 197.3 seconds
+2026-11-06 20:21:23.302 | INFO     | pharokka.run:main:523 - If you use Pharokka in your research, please cite:
+2026-11-06 20:21:23.302 | INFO     | pharokka.run:main:524 - George Bouras, Roshan Nepal, Ghais Houtak, Alkis James Psaltis, Peter-John Wormald, Sarah Vreugde.
+2026-11-06 20:21:23.302 | INFO     | pharokka.run:main:527 - Pharokka: a fast scalable bacteriophage annotation tool.
+2026-11-06 20:21:23.303 | INFO     | pharokka.run:main:528 - Bioinformatics, Volume 39, Issue 1, January 2023, btac776.
+2026-11-06 20:21:23.303 | INFO     | pharokka.run:main:529 - https://doi.org/10.1093/bioinformatics/btac776.
+2026-11-06 20:21:23.303 | INFO     | pharokka.run:main:530 - You should also cite the full list of tools Pharokka uses, which can be found at https://github.com/gbouras13/pharokka#citation.

@@ -1,0 +1,2 @@
+sample,fastq
+t7,tests/data/reads/t7/*.fastq.gz

@@ -1,0 +1,269 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema",
+  "$id": "https://raw.githubusercontent.com/ehill-iolani/ulana-phage-nf/main/nextflow_schema.json",
+  "title": "ulana-phage-nf pipeline parameters",
+  "description": "Phage genome assembly and annotation from Oxford Nanopore long reads: depth capping, Flye assembly, optional Medaka polishing, Pharokka annotation (PHROGs, closest INPHARED phage, CARD/VFDB) and CheckV completeness.",
+  "type": "object",
+  "$defs": {
+    "input_output_options": {
+      "title": "Input/output options",
+      "type": "object",
+      "description": "Define where the pipeline should find input data and save output data.",
+      "required": [
+        "input"
+      ],
+      "properties": {
+        "input": {
+          "type": "string",
+          "format": "file-path",
+          "exists": true,
+          "mimetype": "text/csv",
+          "pattern": "^\\S+\\.csv$",
+          "description": "Samplesheet CSV with columns sample,fastq.",
+          "help_text": "Each row maps a sample name to a fastq(.gz) file or glob. A glob may match multiple part-files -- they're merged into one file per sample before filtering. Glob paths resolve relative to the launch directory, not the samplesheet's own location."
+        },
+        "outdir": {
+          "type": "string",
+          "format": "directory-path",
+          "default": "results",
+          "description": "Output directory where results are published."
+        }
+      }
+    },
+    "read_filtering": {
+      "title": "Read filtering",
+      "type": "object",
+      "description": "chopper quality/length filtering.",
+      "properties": {
+        "chopper_q": {
+          "type": "integer",
+          "default": 10,
+          "minimum": 0,
+          "description": "Minimum average read quality (Phred score)."
+        },
+        "chopper_minlength": {
+          "type": "integer",
+          "default": 1000,
+          "minimum": 1,
+          "description": "Minimum read length."
+        },
+        "enable_read_stats": {
+          "type": "boolean",
+          "default": true,
+          "description": "Summarize read length and Q-score before vs. after filtering.",
+          "help_text": "Writes read_qc_summary.html, read_stats.tsv and read_length_qscore_hist.tsv to read_qc/. Purely informational -- nothing downstream depends on it."
+        }
+      }
+    },
+    "downsampling": {
+      "title": "Downsampling",
+      "type": "object",
+      "description": "Subsample very deep samples before assembly.",
+      "properties": {
+        "enable_downsampling": {
+          "type": "boolean",
+          "default": true,
+          "description": "Subsample each sample's filtered reads to --target_coverage before assembly.",
+          "help_text": "Flye fails on very deep data (a ~91 kb phage at ~5,000x gave 'No disjointigs were assembled'), and phage isolates are often sequenced that deep. Reads are picked at random with Rasusa. A sample below the target keeps every filtered read. Flye and Medaka both use the subsampled reads; {sample}/reads/{sample}.downsampling.tsv records the depth before and after."
+        },
+        "target_coverage": {
+          "type": "integer",
+          "default": 150,
+          "minimum": 1,
+          "description": "Depth to subsample to (x genome size).",
+          "help_text": "Samples with more than this many bases per genome base are cut to it; samples with less are left alone."
+        },
+        "genome_size": {
+          "type": "string",
+          "pattern": "^\\s*\\d+(\\.\\d+)?\\s*[kKmMgG]?([bB][pP]?)?\\s*$",
+          "description": "Expected genome size, e.g. 40kb. Leave blank to estimate it.",
+          "help_text": "Used to turn --target_coverage into a number of bases; 1 kb to 1 Mb. Left blank, LRGE estimates each sample's genome size from its reads, held to --phage_size_min..--phage_size_max (15-500 kb). LRGE tends to guess high on phages (131 kb for 40 kb T7), which means less subsampling, not more. If the estimate fails, the upper bound is used, so a deep sample is still capped. Set it when every sample in the run is the same phage."
+        },
+        "phage_size_min": {
+          "type": "integer",
+          "default": 15000,
+          "minimum": 1000,
+          "description": "Smallest genome size (bp) an LRGE estimate is allowed to give.",
+          "hidden": true,
+          "help_text": "A smaller estimate is raised to this. Only used when --genome_size is blank."
+        },
+        "phage_size_max": {
+          "type": "integer",
+          "default": 500000,
+          "minimum": 1000,
+          "description": "Largest genome size (bp) an LRGE estimate is allowed to give.",
+          "hidden": true,
+          "help_text": "A larger estimate, or a failed one, is lowered to this. Only used when --genome_size is blank."
+        }
+      }
+    },
+    "assembly": {
+      "title": "Assembly",
+      "type": "object",
+      "description": "Flye assembly.",
+      "properties": {
+        "flye_mode": {
+          "type": "string",
+          "default": "--nano-hq",
+          "enum": [
+            "--nano-hq",
+            "--nano-raw",
+            "--nano-corr"
+          ],
+          "description": "Flye read-type flag.",
+          "help_text": "--nano-hq for modern high-accuracy basecalling (Guppy5+/Dorado SUP), --nano-raw for older/lower-accuracy reads, --nano-corr for pre-corrected reads."
+        }
+      }
+    },
+    "assembly_graph_image": {
+      "title": "Assembly graph image",
+      "type": "object",
+      "description": "Bandage rendering of the Flye assembly graph.",
+      "properties": {
+        "enable_bandage": {
+          "type": "boolean",
+          "default": true,
+          "description": "Render a PNG of the Flye assembly graph with Bandage.",
+          "help_text": "Runs directly off the Flye GFA, so it's unaffected by --enable_medaka (Medaka polishes sequence, not graph topology)."
+        },
+        "bandage_height": {
+          "type": "integer",
+          "default": 1000,
+          "minimum": 1,
+          "description": "Output image height in pixels (width is scaled automatically)."
+        }
+      }
+    },
+    "polishing": {
+      "title": "Polishing",
+      "type": "object",
+      "description": "Medaka polishing of the Flye assembly.",
+      "properties": {
+        "enable_medaka": {
+          "type": "boolean",
+          "default": true,
+          "description": "Polish the Flye assembly with Medaka.",
+          "help_text": "When enabled, Pharokka and CheckV read the Medaka-polished assembly instead of the raw Flye assembly."
+        },
+        "medaka_model": {
+          "type": "string",
+          "default": "r1041_e82_400bps_hac_v5.0.0",
+          "description": "Medaka consensus model name.",
+          "help_text": "Must match the basecaller/flowcell/chemistry combination used to generate the reads -- see `medaka tools list_models`."
+        }
+      }
+    },
+    "annotation": {
+      "title": "Annotation",
+      "type": "object",
+      "description": "Pharokka phage annotation.",
+      "properties": {
+        "enable_pharokka": {
+          "type": "boolean",
+          "default": true,
+          "description": "Annotate with Pharokka.",
+          "help_text": "PHANOTATE gene calls, PHROG functions grouped into categories (head and packaging, tail, lysis, DNA/RNA metabolism, ...), CARD and VFDB hits, tRNAs, and the closest known phage in INPHARED by Mash distance. A novel phage often has no INPHARED hit; that's a normal result. The databases (1.8 GB) are downloaded once and cached."
+        }
+      }
+    },
+    "quality_control": {
+      "title": "Quality control",
+      "type": "object",
+      "description": "CheckV completeness and contamination.",
+      "properties": {
+        "enable_checkv": {
+          "type": "boolean",
+          "default": true,
+          "description": "Estimate completeness and host contamination with CheckV.",
+          "help_text": "Each contig gets a quality tier (Complete / High / Medium / Low / Not-determined), a completeness estimate and a count of viral vs. host genes, so a host contig in the assembly can be told apart from the phage. The database (6.4 GB) is downloaded once and cached."
+        }
+      }
+    },
+    "generic_options": {
+      "title": "Generic options",
+      "type": "object",
+      "description": "Less common options, typically left at their defaults.",
+      "properties": {
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Display the help message and exit.",
+          "hidden": true
+        },
+        "tracedir": {
+          "type": "string",
+          "format": "directory-path",
+          "default": "results/pipeline_info",
+          "description": "Directory for the Nextflow timeline/report/trace files.",
+          "hidden": true
+        }
+      }
+    },
+    "container_images": {
+      "title": "Container images",
+      "type": "object",
+      "description": "Where each tool's container image is pulled from.",
+      "properties": {
+        "container_registry": {
+          "type": "string",
+          "default": "quay.io",
+          "description": "Registry for the biocontainers images (bandage, checkv, chopper, flye, lrge, pandas, pharokka, rasusa).",
+          "hidden": true,
+          "help_text": "The google_batch profile points this at the project's own Artifact Registry mirror (see scripts/mirror_images.sh) so Batch VMs don't pull from quay.io; pass --container_registry quay.io to pull from upstream instead. The mirror keeps each image's upstream path, so only the host changes."
+        },
+        "dockerhub_registry": {
+          "type": "string",
+          "default": "docker.io",
+          "description": "Registry for the Docker Hub images (medaka, and ubuntu for merging reads and on Batch).",
+          "hidden": true,
+          "help_text": "Same idea as container_registry, for images that come from Docker Hub."
+        },
+        "pharokka_container": {
+          "type": "string",
+          "description": "Whole image name to run Pharokka from instead of the biocontainer.",
+          "hidden": true,
+          "help_text": "Only for Apple-silicon Macs, where the stock image segfaults under amd64 emulation; build one from docker/pharokka-compat/Dockerfile."
+        },
+        "db_cache": {
+          "type": "string",
+          "default": "assets/db_cache",
+          "description": "Where the Pharokka and CheckV databases are cached between runs.",
+          "hidden": true,
+          "help_text": "The google_batch profile sets gs://nextflow-jobs/phage/db_cache."
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "$ref": "#/$defs/input_output_options"
+    },
+    {
+      "$ref": "#/$defs/read_filtering"
+    },
+    {
+      "$ref": "#/$defs/downsampling"
+    },
+    {
+      "$ref": "#/$defs/assembly"
+    },
+    {
+      "$ref": "#/$defs/assembly_graph_image"
+    },
+    {
+      "$ref": "#/$defs/polishing"
+    },
+    {
+      "$ref": "#/$defs/annotation"
+    },
+    {
+      "$ref": "#/$defs/quality_control"
+    },
+    {
+      "$ref": "#/$defs/generic_options"
+    },
+    {
+      "$ref": "#/$defs/container_images"
+    }
+  ]
+}

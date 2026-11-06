@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test-profile:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java (required by Nextflow)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Install Nextflow
+        uses: nf-core/setup-nextflow@v2
+        with:
+          version: "latest-stable"
+
+      # -stub-run: Pharokka and CheckV (8.2 GB of databases) copy in the real
+      # T7 outputs from tests/data/stub/ instead of running; every other step
+      # (merge, chopper, read stats, LRGE/Rasusa, Flye, Bandage, Medaka) runs
+      # for real. Run the full test locally when bumping either tool
+      - name: Run pipeline against the T7 test dataset
+        run: nextflow run main.nf -profile test,docker -stub-run

@@ -1,0 +1,17 @@
+Description	Count	contig
+CDS	60	contig_1
+connector	2	contig_1
+DNA, RNA and nucleotide metabolism	12	contig_1
+head and packaging	11	contig_1
+integration and excision	0	contig_1
+lysis	3	contig_1
+moron, auxiliary metabolic gene and host takeover	3	contig_1
+other	3	contig_1
+tail	3	contig_1
+transcription regulation	0	contig_1
+unknown function	23	contig_1
+tRNAs	0	contig_1
+CRISPRs	0	contig_1
+tmRNAs	0	contig_1
+VFDB_Virulence_Factors	0	contig_1
+CARD_AMR_Genes	0	contig_1

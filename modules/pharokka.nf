@@ -13,6 +13,16 @@
 // A sample's novel phage has no INPHARED hit within --mash_distance 0.2; the
 // mash file then holds the literal "no_inphared_mash_hit". That's a normal
 // result, not a failure.
+//
+// Pharokka 1.10.1 reads Mash's hits (mash_out.tsv) with polars and no column
+// types, so polars guesses them from the first 100 rows. A phage with many
+// exact INPHARED matches has p-values of 0 there, polars picks an integer
+// column, and a later p-value like 2.47954e-57 crashes the run ("could not
+// parse ... as dtype i64"; NWUG, validation 2026-11-11). Every other
+// read_csv in Pharokka sets infer_schema_length itself. A sitecustomize.py on
+// PYTHONPATH makes read_csv scan the whole file when the caller didn't say,
+// which only changes that one call. Still unfixed on Pharokka master on
+// 2026-11-11; drop this when an image with the fix is pinned.
 process PHAROKKA {
     tag "$sample"
     label 'process_medium'
@@ -44,6 +54,26 @@ process PHAROKKA {
     if [ "\$(grep -c '^>' ${assembly})" -gt 1 ]; then
         META='-m --meta_hmm'
     fi
+    # the Mash-table fix described above
+    mkdir -p pysite
+    cat > pysite/sitecustomize.py <<'EOF'
+    try:
+        import functools
+        import polars
+
+        _read_csv = polars.read_csv
+
+        @functools.wraps(_read_csv)
+        def _read_csv_full_scan(*args, **kwargs):
+            kwargs.setdefault("infer_schema_length", None)
+            return _read_csv(*args, **kwargs)
+
+        polars.read_csv = _read_csv_full_scan
+    except Exception:
+        pass
+    EOF
+
+    PYTHONPATH="\$PWD/pysite\${PYTHONPATH:+:\$PYTHONPATH}" \\
     pharokka run -i ${assembly} -o pharokka_out -d ${db} -t ${task.cpus} -f \\
         -p pharokka -l ${locus} -g phanotate \$META
 

@@ -109,7 +109,7 @@ run `nextflow run main.nf --help`. Key ones:
 results/
   {sample}/
     reads/                 merged + filtered fastq, {sample}.downsampling.tsv (only if --enable_downsampling)
-    assembly/flye/         assembly.fasta, assembly_info.txt, assembly_graph.gfa, assembly_graph.png (only if --enable_bandage)
+    assembly/flye/         assembly.fasta, assembly_info.txt, assembly_graph.gfa, flye_reads.tsv, assembly_graph.png (only if --enable_bandage)
     polish/medaka/         polished_consensus.fasta (only if --enable_medaka)
     annotation/pharokka/   pharokka.gff/.gbk/.tbl, pharokka_cds_final_merged_output.tsv, pharokka_cds_functions.tsv,
                            pharokka_top_hits_mash_inphared.tsv, top_hits_card.tsv, top_hits_vfdb.tsv,
@@ -135,9 +135,10 @@ scripts/mirror_images.sh      copies the pipeline's container images into our Ar
 .github/workflows/ci.yml      runs -profile test on push/PR
 ```
 
-`merge_fastq`, `chopper`, `read_stats`, `flye`, `bandage_image` and `medaka`
-are copies of ulana-nf's modules; `downsample` is too, apart from the
-genome-size limit below. Keep fixes in step between the two repos.
+`merge_fastq`, `chopper`, `read_stats`, `bandage_image` and `medaka` are
+copies of ulana-nf's modules; `downsample` is too, apart from the genome-size
+limit below, and `flye` apart from its second try. Keep fixes in step between
+the two repos.
 
 ## Downsampling
 
@@ -174,6 +175,27 @@ records the decision:
 | `reads_used` | `subsample` or `all` |
 | `assembly_bases`, `assembly_coverage` | what went to Flye (the target, for a subsample) |
 | `lrge_estimate` | LRGE's own estimate before the limit (blank when `--genome_size` was given or LRGE failed) |
+
+### Second Flye try when the size estimate is wrong
+
+The cap is only as good as the genome size. A whole-plaque WGS prep carries
+host DNA, so LRGE sizes the host rather than the phage and nothing is cut:
+one such sample was estimated at 3.7 Mb, held to 500 kb, kept all 46 Mb of
+reads, and Flye failed at 583x. Flye measures the depth itself before it
+gives up ("Overlap-based coverage"), so when it fails with "No disjointigs
+were assembled" at more than `--target_coverage`, `FLYE_ASSEMBLY` takes a
+seeded random `target / measured` share of the reads (150/583 = 26% there)
+and runs Flye once more. Any other Flye error, or a second failure, still
+fails the sample. Off with `--enable_downsampling false`. Medaka still
+polishes with every read Flye was given at first.
+`assembly/flye/flye_reads.tsv` records it:
+
+| Column | Meaning |
+|---|---|
+| `reads_used` | `all`, or `subset` after a second try |
+| `subset_fraction` | share of the reads assembled on the second try (`1` otherwise) |
+| `first_try_coverage` | Flye's overlap-based coverage on the reads it was given |
+| `assembled_coverage` | the same on the reads it assembled |
 
 The first nine columns are the same as ulana-nf's.
 

@@ -14,6 +14,15 @@
 //
 // Medaka still polishes with every read this step was given. flye_reads.tsv
 // records which reads were assembled.
+//
+// One copy per genome: Flye sometimes reports a phage as one contig holding
+// two back-to-back copies (8NZ0, EGVZ, ZTYS in PRJNA1502461, 2026-11-11:
+// ~85 kb for ~43 kb genomes). bin/collapse_copies.py cuts such a contig to one
+// copy before Medaka, so polishing, CheckV and Pharokka see the real genome
+// (polishing the ZTYS dimer as it was left 368 differences; one copy, 5 plus
+// one ~190 bp stretch). copies.tsv lists what was cut; assembly_info.txt and
+// the graph stay as Flye made them. Contigs over 2 x --phage_size_max (host
+// DNA) aren't checked.
 
 process FLYE_ASSEMBLY {
     tag "$sample"
@@ -30,6 +39,7 @@ process FLYE_ASSEMBLY {
     tuple val(sample), path("assembly_info.txt"), emit: info
     tuple val(sample), path("assembly_graph.gfa"), emit: gfa
     tuple val(sample), path("flye_reads.tsv"), emit: reads_used
+    tuple val(sample), path("copies.tsv"), emit: copies
     tuple val(sample), path("flye.version"), emit: version
 
     script:
@@ -75,7 +85,11 @@ PY
             exit 1
         fi
     fi
-    mv flye_run/assembly.fasta flye_run/assembly_info.txt flye_run/assembly_graph.gfa .
+    mv flye_run/assembly_info.txt flye_run/assembly_graph.gfa .
+
+    # a contig that is two copies of the genome -> one copy (see above)
+    collapse_copies.py --sample "${sample}" --in flye_run/assembly.fasta \\
+        --out assembly.fasta --table copies.tsv --max-length ${(params.phage_size_max as long) * 2}
 
     # first_try_coverage = Flye's overlap coverage on the reads it was given,
     # assembled_coverage = the same on the reads it assembled

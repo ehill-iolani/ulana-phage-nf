@@ -13,7 +13,7 @@ annotation and [CheckV](https://bitbucket.org/berkeleylab/checkv) completeness.
 2. `CHOPPER` -- quality + length filtering
    - `READ_STATS` (side branch, `--enable_read_stats`, on by default) -- read length and mean Q-score before vs. after filtering
    - `DOWNSAMPLE_PLAN` + `DOWNSAMPLE` -- cap very deep samples at `--target_coverage` before assembly (on by default, see [Downsampling](#downsampling))
-3. `FLYE_ASSEMBLY` -- assembly
+3. `FLYE_ASSEMBLY` -- assembly; a contig holding two copies of the genome is cut to one (see [One copy per genome](#one-copy-per-genome))
 4. `BANDAGE_IMAGE` -- render a PNG of the Flye assembly graph (optional, default on)
 5. `MEDAKA_POLISH` -- polish (optional, default on)
 6. `PHAROKKA_DB` + `PHAROKKA` -- annotate (optional, default on)
@@ -109,7 +109,7 @@ run `nextflow run main.nf --help`. Key ones:
 results/
   {sample}/
     reads/                 merged + filtered fastq, {sample}.downsampling.tsv (only if --enable_downsampling)
-    assembly/flye/         assembly.fasta, assembly_info.txt, assembly_graph.gfa, flye_reads.tsv, assembly_graph.png (only if --enable_bandage)
+    assembly/flye/         assembly.fasta, assembly_info.txt, assembly_graph.gfa, flye_reads.tsv, copies.tsv, assembly_graph.png (only if --enable_bandage)
     polish/medaka/         polished_consensus.fasta (only if --enable_medaka)
     annotation/pharokka/   pharokka.gff/.gbk/.tbl, pharokka_cds_final_merged_output.tsv, pharokka_cds_functions.tsv,
                            pharokka_top_hits_mash_inphared.tsv, top_hits_card.tsv, top_hits_vfdb.tsv,
@@ -126,6 +126,7 @@ main.nf                       entry point, samplesheet parsing, --help
 workflows/ulana_phage.nf      subworkflow chaining all steps
 modules/*.nf                  one process per tool, one container each
 bin/read_stats.py             read length/Q-score summary (stdlib only; also runs stand-alone)
+bin/collapse_copies.py        cuts a contig made of back-to-back genome copies to one copy (stdlib only)
 nextflow.config               param defaults, profiles, resource labels
 nextflow_schema.json          JSON Schema describing every --param (for UIs/validation tooling)
 conf/test.config              -profile test overrides (small public T7 dataset)
@@ -137,7 +138,7 @@ scripts/mirror_images.sh      copies the pipeline's container images into our Ar
 
 `merge_fastq`, `chopper`, `read_stats`, `bandage_image` and `medaka` are
 copies of ulana-nf's modules; `downsample` is too, apart from the genome-size
-limit below, and `flye` apart from its second try. Keep fixes in step between
+limit below, and `flye` apart from its second try and its one-copy check. Keep fixes in step between
 the two repos.
 
 ## Downsampling
@@ -198,6 +199,31 @@ polishes with every read Flye was given at first.
 | `assembled_coverage` | the same on the reads it assembled |
 
 The first nine columns are the same as ulana-nf's.
+
+### One copy per genome
+
+Flye sometimes reports a phage as a single contig holding two back-to-back
+copies of its genome: three ~43 kb phages in one validation set came out at
+~85 kb. The results would then show a phage twice its size with every gene
+twice, and Medaka polishes such a contig badly, since each read fits either
+copy. `FLYE_ASSEMBLY` runs `bin/collapse_copies.py` on Flye's contigs and cuts
+such a contig to one copy before Medaka, CheckV and Pharokka see it.
+
+A contig is cut only when at least 80% of the k-mers that could recur one
+copy-length later do, and the repeat spans at least 90% of a copy. A phage's
+terminal repeat (a few hundred bp at both ends) is far shorter and is left
+alone. The cut is where the contig's start comes round again, so the kept copy
+joins up end to start. Contigs over 2 x `--phage_size_max` (host DNA) aren't
+checked. `assembly_info.txt` and the graph stay as Flye made them;
+`assembly/flye/copies.tsv` lists what was cut (only its header when nothing
+was):
+
+| Column | Meaning |
+|---|---|
+| `contig` | Flye's contig name, kept on the cut contig |
+| `flye_length`, `copy_length` | bp before and after |
+| `copies` | `flye_length / copy_length` (e.g. `2.00`) |
+| `shared_kmers` | share of the k-mers that recur one copy later |
 
 ## Annotation and QC
 

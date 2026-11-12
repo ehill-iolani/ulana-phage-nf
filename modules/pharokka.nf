@@ -23,6 +23,14 @@
 // PYTHONPATH makes read_csv scan the whole file when the caller didn't say,
 // which only changes that one call. Still unfixed on Pharokka master on
 // 2026-11-11; drop this when an image with the fix is pinned.
+//
+// Pharokka 1.10.1 also names its working proteins contig + gene number with
+// nothing between, numbering genes across the whole assembly, so gene 825 on
+// contig_8 and gene 25 on contig_88 are both "contig_8825" and it stops with
+// "Duplicate key" (WGS_MaterMagnus, 181 contigs, validation 2026-11-12).
+// bin/pharokka_names.py gives Pharokka contig names that end in a letter
+// (contig_8 -> contig_8x) and takes the letter back off in every output file,
+// so the published files use the assembly's own names.
 process PHAROKKA {
     tag "$sample"
     label 'process_medium'
@@ -73,8 +81,12 @@ process PHAROKKA {
         pass
     EOF
 
+    # the duplicate-gene-name fix described above (in_/renamed_ names stay
+    # out of the published glob)
+    pharokka_names.py mark --in ${assembly} --out in_pharokka.fasta --names renamed_contigs.txt
+
     PYTHONPATH="\$PWD/pysite\${PYTHONPATH:+:\$PYTHONPATH}" \\
-    pharokka run -i ${assembly} -o pharokka_out -d ${db} -t ${task.cpus} -f \\
+    pharokka run -i in_pharokka.fasta -o pharokka_out -d ${db} -t ${task.cpus} -f \\
         -p pharokka -l ${locus} -g phanotate \$META
 
     # the results sit beside Pharokka's working dirs; bring up just the files,
@@ -85,6 +97,8 @@ process PHAROKKA {
     mv pharokka_out work_pharokka
     # "pharokka_1793996051.0661829.log" -> a name the results page can find
     mv pharokka_*.log pharokka.log
+
+    pharokka_names.py restore --names renamed_contigs.txt pharokka* top_hits_* phanotate.f* terL.f*
 
     # "pharokka v1.10.1" -> "1.10.1"
     pharokka -V 2>&1 | awk '{ sub(/^v/, "", \$NF); print \$NF }' > pharokka.version

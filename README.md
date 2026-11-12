@@ -127,6 +127,7 @@ workflows/ulana_phage.nf      subworkflow chaining all steps
 modules/*.nf                  one process per tool, one container each
 bin/read_stats.py             read length/Q-score summary (stdlib only; also runs stand-alone)
 bin/collapse_copies.py        cuts a contig made of back-to-back genome copies to one copy (stdlib only)
+bin/pharokka_names.py         renames contigs around Pharokka so two genes can't get the same name (stdlib only)
 nextflow.config               param defaults, profiles, resource labels
 nextflow_schema.json          JSON Schema describing every --param (for UIs/validation tooling)
 conf/test.config              -profile test overrides (small public T7 dataset)
@@ -233,6 +234,13 @@ isolate's assembly can hold a host fragment as well as the phage. (Pharokka
 refuses `-m` on a single contig.) Meta mode would switch the gene caller to
 prodigal-gv and skip the HMM search, so `-g phanotate` (always) and
 `--meta_hmm` keep the isolate defaults. Contigs keep Flye's start position (no dnaapler reorientation).
+Pharokka 1.10.1 names its working proteins contig name + gene number with
+nothing between, counting genes across the whole assembly, so on a
+many-contig assembly two genes can get the same name (gene 825 on contig_8
+and gene 25 on contig_88 are both `contig_8825`) and it stops with
+"Duplicate key". `bin/pharokka_names.py` hands Pharokka names ending in a
+letter (`contig_8x`) and takes the letter back off in every output, so the
+published files use the assembly's own contig names.
 A novel phage often has no INPHARED hit within Mash distance 0.2;
 `pharokka_top_hits_mash_inphared.tsv` then says `no_inphared_mash_hit`, which
 is a normal result.

@@ -211,9 +211,13 @@ copy. `FLYE_ASSEMBLY` runs `bin/collapse_copies.py` on Flye's contigs and cuts
 such a contig to one copy before Medaka, CheckV and Pharokka see it.
 
 A contig is cut only when at least 80% of the k-mers that could recur one
-copy-length later do, and the repeat spans at least 90% of a copy. A phage's
+copy-length later do, the repeat spans at least 90% of a copy, and the contig
+is a whole number of copies (within 0.03, e.g. 2.00 or 3.00). A phage's
 terminal repeat (a few hundred bp at both ends) is far shorter and is left
-alone. The cut is where the contig's start comes round again, so the kept copy
+alone. A contig of, say, 1.91 copies is left alone too: Flye has joined its
+copies wrongly, and the cut copy would hold one stretch twice and lack
+another. Nor is a contig whose two copies differ by many small indels, which
+the 80% rule misses; such a contig stays at about twice the genome size. The cut is where the contig's start comes round again, so the kept copy
 joins up end to start. Contigs over 2 x `--phage_size_max` (host DNA) aren't
 checked. `assembly_info.txt` and the graph stay as Flye made them;
 `assembly/flye/copies.tsv` lists what was cut (only its header when nothing

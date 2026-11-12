@@ -30,6 +30,7 @@ Pure standard library. Usage:
   pharokka_names.py restore --names renamed.txt FILE [FILE ...]
 """
 import argparse
+import os
 import re
 import sys
 
@@ -69,6 +70,10 @@ def restore(names_path, files):
     pattern = restore_pattern(names)
     changed = 0
     for path in files:
+        # the pharokka* glob also matches the database folder staged into the
+        # task dir (pharokka_v1.8.0_databases); only plain files are outputs
+        if os.path.isdir(path):
+            continue
         try:
             with open(path, encoding="utf-8") as f:
                 text = f.read()

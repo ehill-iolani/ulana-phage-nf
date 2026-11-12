@@ -21,6 +21,11 @@ It's cut to that length only when
     A phage's terminal repeat (DTR, a few hundred bp at both ends, which is
     what lets CheckV call a genome complete) fails this and is left alone.
   - the copy is at least MIN_COPY bp.
+  - the contig is a whole number of copies, within MAX_PARTIAL (every right
+    cut so far: 2.00, 3.00, 3.99, 5.00). G3YT (validation 2026-11-12) was
+    1.91 copies: the cut copy held one stretch twice and lacked ~3.4 kb
+    elsewhere, and Medaka then grew it to 46.7 kb for a 43.2 kb phage. A
+    partial copy means Flye joined the copies wrongly, so it's left as is.
 The first copy is kept, cut where the contig's start comes round again: on a
 circular contig that's the whole genome, and Medaka then polishes it with
 every read. Where the copies disagree, the kept copy keeps its own version
@@ -46,6 +51,7 @@ MIN_COPY = 1000
 OFFSET_SLACK = 20  # bp; the copies' errors shift k-mers by a few bases
 START_WINDOW = 2000  # bp at the contig's start that place the cut
 START_SLACK = 0.05  # how far (fraction of a copy) the cut may sit from the majority offset
+MAX_PARTIAL = 0.03  # contig length must be within this of a whole number of copies
 
 
 def read_fasta(path):
@@ -115,6 +121,9 @@ def find_copy_length(seq):
             if near > cut_support:
                 cut, cut_support = offset, near
         best = cut
+    copies = n / best
+    if abs(copies - round(copies)) > MAX_PARTIAL:
+        return None
     return best, shared
 
 
